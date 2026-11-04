@@ -1,0 +1,9 @@
+.gradle/
+build/
+bin/
+*.wpilog
+networktables.json
+simgui*.json
+.vscode/*.log
+.DS_Store
+logs/
