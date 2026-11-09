@@ -29,9 +29,6 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     DogLog.setEnabled(false);
-    if (RobotBase.isReal()) {
-      throw new IllegalStateException("Mock hardware is unconfigured");
-    }
 
     configureBindings();
     autoChooser = new SendableChooser<>();

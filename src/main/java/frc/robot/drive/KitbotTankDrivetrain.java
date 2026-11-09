@@ -5,17 +5,22 @@
 package frc.robot.drive;
 
 import java.util.function.DoubleSupplier;
+
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-/** Reduced from the existing kitbot branch.
+/**
+ * Reduced from the existing kitbot branch.
  */
 public class KitbotTankDrivetrain extends SubsystemBase {
+  // TODO (Aadya): pls check that these CAN IDs and motor directions are right
+  public WPI_TalonSRX leftDrive = new WPI_TalonSRX(13);
+  public WPI_TalonSRX rightDrive = new WPI_TalonSRX(15);
 
-  public MotorController leftLeader;
-  public MotorController rightLeader;
   protected DifferentialDrive drive;
 
   public KitbotTankDrivetrain() {
@@ -23,16 +28,19 @@ public class KitbotTankDrivetrain extends SubsystemBase {
   }
 
   protected void initialize() {
-    if (leftLeader == null || rightLeader == null) {
-      throw new IllegalStateException("Drive hardware is unconfigured");
-    }
-    drive = new DifferentialDrive(leftLeader::set, rightLeader::set);
+    
+    drive = new DifferentialDrive(leftDrive::set, rightDrive::set);
   }
 
-  // Command factory to create command to drive the robot with joystick inputs.
-  public Command driveArcade(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
-    return this.run(
-        () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()));
+
+   // TODO (Lia): set up drive speed limiting and
+   // test out the drive behavior s.t. its right
+   public Command driveArcade(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
+    return this.runEnd(
+        () -> drive.arcadeDrive(
+            xSpeed.getAsDouble(),
+            zRotation.getAsDouble()),
+        this::brake);
   }
 
   public void brake() {

@@ -2,7 +2,9 @@ package frc.robot.subsystems.base;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -17,18 +19,20 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
- * Base for all subsystems which are a single mechanism controlled by constant voltage.
- * This is simpler than PIDF control and is suitable for mechanisms like indexers.
+ * Base for all subsystems which are a single mechanism controlled by constant
+ * voltage.
+ * This is simpler than PIDF control and is suitable for mechanisms like
+ * indexers.
  */
 public class VoltageControlledBase extends SubsystemBase {
   // The following fields must be defined by subclasses.
   public String SUBSYSTEM_NAME = "WARNING NAME NOT SET";
 
   // Hardware devices
-  public TalonFX motor;
+  public WPI_TalonSRX motor;
 
   // Configuration
-  public TalonFXConfiguration motorConfig;
+  public TalonSRXConfiguration motorConfig;
 
   // Default voltage for operation
   public double DEFAULT_VOLTAGE = 6.0;
@@ -59,18 +63,12 @@ public class VoltageControlledBase extends SubsystemBase {
   // This method MUST be called at the end of subsystem initializers
   protected void initialize() {
     // Get status signals
-    positionSignal = motor.getPosition();
-    velocitySignal = motor.getVelocity();
-    voltageSignal = motor.getMotorVoltage();
-    statorCurrentSignal = motor.getStatorCurrent();
-    temperatureSignal = motor.getDeviceTemp();
+    motor.configAllSettings(motorConfig);
 
-    // Apply configuration
-    motor.getConfigurator().apply(motorConfig);
-
-    // Tunables
     setpoint_subscriber = DogLog.tunable(
-      SUBSYSTEM_NAME + "/voltage setpoint", voltageSetpoint, this::setVoltage);
+      SUBSYSTEM_NAME + "/voltage setpoint",
+      voltageSetpoint,
+      this::setVoltage);
   }
 
   /**
@@ -78,18 +76,9 @@ public class VoltageControlledBase extends SubsystemBase {
    */
   @Override
   public void periodic() {
-    BaseStatusSignal.refreshAll(
-      positionSignal,
-      velocitySignal,
-      voltageSignal,
-      statorCurrentSignal,
-      temperatureSignal
-    );
 
     // Log values
     // btw prob not using these in Mock season
-    DogLog.log(SUBSYSTEM_NAME + "/Angular Position", getAngularPosition());
-    DogLog.log(SUBSYSTEM_NAME + "/Angular Velocity", getAngularVelocity());
     DogLog.log(SUBSYSTEM_NAME + "/Voltage", getVoltage());
     DogLog.log(SUBSYSTEM_NAME + "/Stator Current", getCurrent());
     DogLog.log(SUBSYSTEM_NAME + "/Temperature", getTemperature());
@@ -97,47 +86,35 @@ public class VoltageControlledBase extends SubsystemBase {
   }
 
   /**
-   * Get the current position in rotations.
-   * @return Position in rotations
-   */
-  public double getAngularPosition() {
-    return positionSignal.getValueAsDouble();
-  }
-
-  /**
-   * Get the current velocity in rotations per second.
-   * @return Velocity in rotations per second
-   */
-  public double getAngularVelocity() {
-    return velocitySignal.getValueAsDouble();
-  }
-
-  /**
    * Get the current applied voltage.
+   * 
    * @return Applied voltage
    */
   public double getVoltage() {
-    return voltageSignal.getValueAsDouble();
+    return motor.getMotorOutputVoltage();
   }
 
   /**
    * Get the current motor current.
+   * 
    * @return Motor current in amps
    */
   public double getCurrent() {
-    return statorCurrentSignal.getValueAsDouble();
+    return motor.getOutputCurrent();
   }
 
   /**
    * Get the current motor temperature.
+   * 
    * @return Motor temperature in Celsius
    */
   public double getTemperature() {
-    return temperatureSignal.getValueAsDouble();
+    return motor.getTemperature();
   }
 
   /**
    * Get the current voltage setpoint.
+   * 
    * @return Current voltage setpoint
    */
   public double getVoltageSetpoint() {
@@ -146,11 +123,12 @@ public class VoltageControlledBase extends SubsystemBase {
 
   /**
    * Set motor voltage.
+   * 
    * @param voltage The voltage to apply
    */
   public void setVoltage(double voltage) {
     voltageSetpoint = voltage;
-    motor.setControl(voltageRequest.withOutput(voltage));
+    motor.setVoltage(voltage);
   }
 
   /**
@@ -177,31 +155,35 @@ public class VoltageControlledBase extends SubsystemBase {
 
   /**
    * Creates a command to run at a specific voltage.
+   * 
    * @param voltage The voltage to apply
    * @return A command that runs the mechanism at the specified voltage
    */
   public Command setVoltageCommand(double voltage) {
-    return run(() -> setVoltage(voltage));
+    return startEnd(() -> setVoltage(voltage), this::stop);
   }
 
   /**
    * Creates a command to run at default voltage.
+   * 
    * @return A command that runs the mechanism
    */
   public Command forwardCommand() {
-    return run(this::forward);
+    return startEnd(this::forward, this::stop);
   }
 
   /**
    * Creates a command to run in reverse.
+   * 
    * @return A command that reverses the mechanism
    */
   public Command reverseCommand() {
-    return run(this::reverse);
+    return startEnd(this::reverse, this::stop);
   }
 
   /**
    * Creates a command to stop the mechanism.
+   * 
    * @return A command that stops the mechanism
    */
   public Command stopCommand() {
