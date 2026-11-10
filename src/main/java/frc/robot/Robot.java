@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 /** Reduced version of 2026 Robot.java. */
 public class Robot extends TimedRobot {
@@ -24,6 +25,7 @@ public class Robot extends TimedRobot {
   // TODO: configure hardware and the controller-specific bases first.
   // public final KitbotTankDrivetrain drivetrain = new KitbotTankDrivetrain();
   // public final BallMechanism ball = new BallMechanism();
+  public final ShooterSubsystem shooter = new ShooterSubsystem(null); // Get a motor later...
 
   public SendableChooser<Command> autoChooser;
 
@@ -42,6 +44,8 @@ public class Robot extends TimedRobot {
     // ball.setDefaultCommand(ball.stopCommand());
     // operatorController.rightBumper().whileTrue(ball.captureCommand());
     // operatorController.rightTrigger().whileTrue(ball.releaseCommand());
+
+    operatorController.rightTrigger(0.01).whileTrue(shooter.fireCommand(operatorController));
   }
 
   @Override
