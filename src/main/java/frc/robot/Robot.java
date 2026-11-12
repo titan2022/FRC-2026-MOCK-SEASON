@@ -34,9 +34,8 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     DogLog.setEnabled(false);
-    // fix tunable override 
+    // fix tunable override
     DogLog.setOptions(DogLog.getOptions().withNtTunables(false));
-
 
     configureBindings();
     autoChooser = new SendableChooser<>();
@@ -45,25 +44,24 @@ public class Robot extends TimedRobot {
     SmartDashboard.putString("Hardware/Status", "ok u should prob double check");
   }
 
-
   // At the moment these are the controlls:
   // If you are to update the behaviors please edit this msg
   // - cinna
 
-  /* 
-   * Driver left/right stick Y  
-   *      Tank drive 
+  /*
+   * Driver left/right stick Y
+   * Tank drive
    * 
-   * Operator left stick X  
-   *      Adds extra turning past a 15% deadband, 
-   *      Capped at 15% output
-   *      driver remains active 
-   * Operator left shoulder  
-   *      Runs the intake/feed rollers 
-   * Operator right shoulder  
-   *      Reverses those rollers 
-   * Operator right trigger  
-   *      Continuously adjusts only the upper shooter fire
+   * Operator left stick X
+   * Adds extra turning past a 15% deadband,
+   * Capped at 15% output
+   * driver remains active
+   * Operator left shoulder
+   * Runs the intake/feed rollers
+   * Operator right shoulder
+   * Reverses those rollers
+   * Operator right trigger
+   * Continuously adjusts only the upper shooter fire
    */
 
   public void configureBindings() {
@@ -73,9 +71,9 @@ public class Robot extends TimedRobot {
     // operatorController.rightTrigger().whileTrue(ball.releaseCommand());
 
     drivetrain.setDefaultCommand(drivetrain.driveTank(
-      // this may be dtm but i think it is "best"
-      // after checking for tele, we take into account
-      // both the drive and op controller movements
+        // this may be dtm but i think it is "best"
+        // after checking for tele, we take into account
+        // both the drive and op controller movements
         () -> isTeleopEnabled() ? -driveController.getLeftY() : 0,
         () -> isTeleopEnabled() ? -driveController.getRightY() : 0,
         () -> isTeleopEnabled() ? operatorController.getLeftX() : 0));
@@ -92,13 +90,13 @@ public class Robot extends TimedRobot {
     teleop.and(operatorController.leftBumper()).and(outtake.negate())
         .whileTrue(intake.intakeCommand());
 
-    // MECHANISM: OUTTAKING 
+    // MECHANISM: OUTTAKING
     outtake.whileTrue(intake.reverseCommand());
-    
+
     // MECHANISM: FIRING
     // deadband threshold of 0.01
     // prior was right but we need to add on telelop condition
-    teleop.and(operatorController.rightTrigger(0.01))
+    teleop.and(operatorController.rightTrigger(0.01)).and(outtake.negate())
         .whileTrue(shooter.fireCommand(operatorController));
   }
 

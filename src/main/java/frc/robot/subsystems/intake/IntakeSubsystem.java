@@ -12,12 +12,12 @@ import frc.robot.subsystems.base.VoltageControlledBase;
 
 public class IntakeSubsystem extends VoltageControlledBase {
 
-    {
+  {
     SUBSYSTEM_NAME = "Intake";
     // the front motor drives both intake rollers
     // linked by belt
-    // direction may need to be checked on the bot 
-    
+    // direction may need to be checked on the bot
+
     motor = new WPI_TalonSRX(2);
     motorConfig = new TalonSRXConfiguration();
 
@@ -25,10 +25,10 @@ public class IntakeSubsystem extends VoltageControlledBase {
     DEFAULT_VOLTAGE = 3.0;
     // direction
     motor.setInverted(false);
-    
+
     motor.setNeutralMode(NeutralMode.Brake);
   }
-  
+
   public IntakeSubsystem() {
     initialize();
   }

@@ -12,12 +12,12 @@ import frc.robot.Constants;
 import frc.robot.subsystems.base.VoltageControlledBase;
 
 public class ShooterSubsystem extends VoltageControlledBase {
-  //init clause
+  // init clause
   {
     SUBSYSTEM_NAME = "Shooter";
-        // Back motor drives the upper shooter
-        // we need to double check this 
-        // on the robot
+    // Back motor drives the upper shooter
+    // we need to double check this
+    // on the robot
     motor = new WPI_TalonSRX(3);
     motorConfig = new TalonSRXConfiguration();
     motorConfig.peakOutputReverse = 0.0;
@@ -25,31 +25,32 @@ public class ShooterSubsystem extends VoltageControlledBase {
     motor.setInverted(false);
     // dont want abrupt stop
     motor.setNeutralMode(NeutralMode.Coast);
-  
+
   }
-  
 
   public ShooterSubsystem() {
     initialize();
   }
-  
+
   // yes this is vague sorry
   public Command fireCommand(CommandXboxController operatorController) {
     return runEnd(
-      // be careful with your lambda!
-      () -> setVoltage(Constants.MAX_FIREPOWER*operatorController.getRightTriggerAxis()),
-    this::stop);
+        // be careful with your lambda!
+        () -> setVoltage(Constants.MAX_FIREPOWER * operatorController.getRightTriggerAxis()),
+        this::stop);
   }
 
-  /* remmeber that this is meant to extend
-  VoltageControlledBase ! so we do not need
-   these implemented
-
-  public void stop() {
-    shooterMotor.stopMotor();
-  }
-
-  public Command stopCommand() {
-    return runOnce(this::stop);
-  } */
+  /*
+   * remmeber that this is meant to extend
+   * VoltageControlledBase ! so we do not need
+   * these implemented
+   * 
+   * public void stop() {
+   * shooterMotor.stopMotor();
+   * }
+   * 
+   * public Command stopCommand() {
+   * return runOnce(this::stop);
+   * }
+   */
 }

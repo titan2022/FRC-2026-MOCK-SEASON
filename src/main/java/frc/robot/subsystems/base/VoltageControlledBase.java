@@ -64,11 +64,14 @@ public class VoltageControlledBase extends SubsystemBase {
   protected void initialize() {
     // Get status signals
     motor.configAllSettings(motorConfig);
+    // this may need to be disabled later but i think
+    // its best to have on for now
+    motor.setSafetyEnabled(true);
 
     setpoint_subscriber = DogLog.tunable(
-      SUBSYSTEM_NAME + "/voltage setpoint",
-      voltageSetpoint,
-      this::setVoltage);
+        SUBSYSTEM_NAME + "/voltage setpoint",
+        voltageSetpoint,
+        this::setVoltage);
   }
 
   /**
