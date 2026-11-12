@@ -1,49 +1,42 @@
 
 package frc.robot.subsystems.intake;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.base.VoltageControlledBase;
 
-public class IntakeSubsystem extends SubsystemBase {
-  private final MotorController intakeMotor;
-  private final MotorController feederMotor;
+public class IntakeSubsystem extends VoltageControlledBase {
 
-  // Cayden, pls config motor controllers and verify which motor
-  // drives the shared intake+lower-shooter shaft
-  public IntakeSubsystem(MotorController intakeMotor, MotorController feederMotor) {
-    this.intakeMotor = intakeMotor;
-    this.feederMotor = feederMotor;
+    {
+    SUBSYSTEM_NAME = "Intake";
+    // the front motor drives both intake rollers
+    // linked by belt
+    // direction may need to be checked on the bot 
+    
+    motor = new WPI_TalonSRX(2);
+    motorConfig = new TalonSRXConfiguration();
+
+    // may need to change
+    DEFAULT_VOLTAGE = 3.0;
+    // direction
+    motor.setInverted(false);
+    
+    motor.setNeutralMode(NeutralMode.Brake);
+  }
+  
+  public IntakeSubsystem() {
+    initialize();
   }
 
   // Ani: Implement intake behavior.
   public Command intakeCommand() {
-    return runEnd(() -> {
-      intakeMotor.set(0.25);
-      
-    }, this::stop);
+    return forwardCommand();
+    // ^^ remember, use VoltageControlledBase methods
   }
 
-  // Ani: Implement reversing
-  public Command reverseCommand() {
-    return runEnd(() -> {
-      intakeMotor.set(-0.25);
-    }, this::stop);
-  }
-
-  // Ani/Cayden: Feed a ball into the shooter.
-  public Command feedCommand() {
-    return runEnd(() -> {
-      intakeMotor.set(0.5);
-    }, this::stop);
-  }
-
-  public void stop() {
-    intakeMotor.stopMotor();
-    feederMotor.stopMotor();
-  }
-
-  public Command stopCommand() {
-    return runOnce(this::stop);
-  }
 }

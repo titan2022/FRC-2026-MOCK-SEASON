@@ -6,12 +6,16 @@ package frc.robot.drive;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 /**
  * Reduced from the existing kitbot branch.
@@ -28,18 +32,31 @@ public class KitbotTankDrivetrain extends SubsystemBase {
   }
 
   protected void initialize() {
-    
+    leftDrive.configFactoryDefault();
+    rightDrive.configFactoryDefault();
+    leftDrive.setInverted(false);
+    rightDrive.setInverted(true);
+    leftDrive.setNeutralMode(NeutralMode.Brake);
+    rightDrive.setNeutralMode(NeutralMode.Brake);
     drive = new DifferentialDrive(leftDrive::set, rightDrive::set);
+    // this MAY need to be chanegd
+    drive.setDeadband(0);
   }
 
-
-   // TODO (Lia): set up drive speed limiting and
-   // test out the drive behavior s.t. its right
-   public Command driveArcade(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
+  // TODO (Lia): set up drive speed limiting and
+  // test out the drive behavior s.t. its right
+  public Command driveTank(DoubleSupplier leftSpeed, DoubleSupplier rightSpeed, DoubleSupplier aim) {
     return this.runEnd(
-        () -> drive.arcadeDrive(
-            xSpeed.getAsDouble(),
-            zRotation.getAsDouble()),
+        () -> {
+
+          // deadbanding
+          double left = MathUtil.applyDeadband(leftSpeed.getAsDouble(), Constants.DRIVE_DEADBAND);
+          double right = MathUtil.applyDeadband(rightSpeed.getAsDouble(), Constants.DRIVE_DEADBAND);
+          // remember, aim is the operator controller's seperate amt
+          double turn = MathUtil.applyDeadband(aim.getAsDouble(), Constants.AIM_DEADBAND)
+              * Constants.AIM_MAX_OUTPUT;
+          drive.tankDrive(left + turn, right - turn, false);
+        },
         this::brake);
   }
 

@@ -1,11 +1,14 @@
 package frc.robot;
 
-/** Unconfigured. */
+/** Robot controls. still need to do max fpower */
 public final class Constants {
   private Constants() {}
   public static final double AUTO_SECONDS = 15.0;
   public static final double TRANSITION_SECONDS = 3.0;
   public static final double TELEOP_SECONDS = 135.0;
 
-  public static final double MAX_FIREPOWER = 10; // TBD
+  public static final double MAX_FIREPOWER = 10; // volts need to tune on the robot
+  public static final double DRIVE_DEADBAND = 0.08;
+  public static final double AIM_DEADBAND = 0.15;
+  public static final double AIM_MAX_OUTPUT = 0.15;
 }

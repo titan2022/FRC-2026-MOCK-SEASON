@@ -13,6 +13,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.drive.KitbotTankDrivetrain;
+import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 /** Reduced version of 2026 Robot.java. */
@@ -22,22 +25,46 @@ public class Robot extends TimedRobot {
   public final CommandXboxController driveController = new CommandXboxController(0);
   public final CommandXboxController operatorController = new CommandXboxController(1);
 
-  // TODO: configure hardware and the controller-specific bases first.
-  // public final KitbotTankDrivetrain drivetrain = new KitbotTankDrivetrain();
-  // public final BallMechanism ball = new BallMechanism();
-  public final ShooterSubsystem shooter = new ShooterSubsystem(null); // Get a motor later...
+  // TODO pls double check these
+  public final KitbotTankDrivetrain drivetrain = new KitbotTankDrivetrain();
+  public final IntakeSubsystem intake = new IntakeSubsystem();
+  public final ShooterSubsystem shooter = new ShooterSubsystem(); // no need to pass through
 
   public SendableChooser<Command> autoChooser;
 
   public Robot() {
     DogLog.setEnabled(false);
+    // fix tunable override 
+    DogLog.setOptions(DogLog.getOptions().withNtTunables(false));
+
 
     configureBindings();
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("Do nothing", Commands.none());
     SmartDashboard.putData("Auto Chooser", autoChooser);
-    SmartDashboard.putString("Hardware/Status", "UNCONFIGURED");
+    SmartDashboard.putString("Hardware/Status", "ok u should prob double check");
   }
+
+
+  // At the moment these are the controlls:
+  // If you are to update the behaviors please edit this msg
+  // - cinna
+
+  /* 
+   * Driver left/right stick Y  
+   *      Tank drive 
+   * 
+   * Operator left stick X  
+   *      Adds extra turning past a 15% deadband, 
+   *      Capped at 15% output
+   *      driver remains active 
+   * Operator left shoulder  
+   *      Runs the intake/feed rollers 
+   * Operator right shoulder  
+   *      Reverses those rollers 
+   * Operator right trigger  
+   *      Continuously adjusts only the upper shooter fire
+   */
 
   public void configureBindings() {
     // TODO: after configuration, use the same binding pattern as the team Robot.
@@ -45,7 +72,34 @@ public class Robot extends TimedRobot {
     // operatorController.rightBumper().whileTrue(ball.captureCommand());
     // operatorController.rightTrigger().whileTrue(ball.releaseCommand());
 
-    operatorController.rightTrigger(0.01).whileTrue(shooter.fireCommand(operatorController));
+    drivetrain.setDefaultCommand(drivetrain.driveTank(
+      // this may be dtm but i think it is "best"
+      // after checking for tele, we take into account
+      // both the drive and op controller movements
+        () -> isTeleopEnabled() ? -driveController.getLeftY() : 0,
+        () -> isTeleopEnabled() ? -driveController.getRightY() : 0,
+        () -> isTeleopEnabled() ? operatorController.getLeftX() : 0));
+
+    // maybe we make intake spin up by default ? kinda
+    // would conflict with the intake mech though
+    intake.setDefaultCommand(intake.stopCommand());
+    shooter.setDefaultCommand(shooter.stopCommand());
+
+    // chaining triggers
+    Trigger teleop = new Trigger(this::isTeleopEnabled);
+    Trigger outtake = teleop.and(operatorController.rightBumper());
+    // when left bumper AND not outaking run intake
+    teleop.and(operatorController.leftBumper()).and(outtake.negate())
+        .whileTrue(intake.intakeCommand());
+
+    // MECHANISM: OUTTAKING 
+    outtake.whileTrue(intake.reverseCommand());
+    
+    // MECHANISM: FIRING
+    // deadband threshold of 0.01
+    // prior was right but we need to add on telelop condition
+    teleop.and(operatorController.rightTrigger(0.01))
+        .whileTrue(shooter.fireCommand(operatorController));
   }
 
   @Override
@@ -56,7 +110,9 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     CommandScheduler.getInstance().cancelAll();
-    // TODO: add stop/brake calls for each subsystem.
+    drivetrain.brake();
+    intake.stop();
+    shooter.stop();
   }
 
   @Override
