@@ -19,21 +19,22 @@ public class IntakeSubsystem extends SubsystemBase {
   // Ani: Implement intake behavior.
   public Command intakeCommand() {
     return runEnd(() -> {
-      intakeCommand().schedule();
+      intakeMotor.set(0.25);
+      
     }, this::stop);
   }
 
   // Ani: Implement reversing
   public Command reverseCommand() {
     return runEnd(() -> {
-      reverseCommand().schedule();
+      intakeMotor.set(-0.25);
     }, this::stop);
   }
 
   // Ani/Cayden: Feed a ball into the shooter.
   public Command feedCommand() {
     return runEnd(() -> {
-      intakeCommand().schedule();
+      intakeMotor.set(0.5);
     }, this::stop);
   }
 
