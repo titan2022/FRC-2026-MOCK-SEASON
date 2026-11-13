@@ -21,6 +21,7 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 /** Reduced version of 2026 Robot.java. */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
+  private boolean shooting;
 
   public final CommandXboxController driveController = new CommandXboxController(
     0);
@@ -61,8 +62,8 @@ public class Robot extends TimedRobot {
    * Runs the intake/feed rollers
    * Operator right shoulder
    * Reverses those rollers
-   * Operator right trigger
-   * Continuously adjusts only the upper shooter fire
+   * Operator X/Y/A/B
+   * Fires at 80%/90%/100%/60% power
    */
 
   public void configureBindings() {
@@ -88,20 +89,28 @@ public class Robot extends TimedRobot {
     Trigger teleop = new Trigger(this::isTeleopEnabled);
     Trigger outtake = teleop.and(operatorController.rightBumper());
     // when left bumper AND not outaking run intake
-    teleop.and(operatorController.leftBumper()).and(outtake.negate())
+    teleop.and(operatorController.leftBumper()).and(outtake.negate()).and(() -> !shooting)
         .whileTrue(intake.intakeCommand());
-    teleop.and(operatorController.leftBumper()).and(outtake.negate())
-        .and(operatorController.rightTrigger(0.01).negate())
+    teleop.and(operatorController.leftBumper()).and(outtake.negate()).and(() -> !shooting)
         .whileTrue(shooter.setVoltageCommand(-5));
 
     // MECHANISM: OUTTAKING
     outtake.whileTrue(intake.reverseCommand());
 
-    // MECHANISM: FIRING
-    // deadband threshold of 0.01
-    // prior was right but we need to add on telelop condition
-    teleop.and(operatorController.rightTrigger(0.01)).and(outtake.negate())
-        .whileTrue(shooter.fireCommand(operatorController));
+    teleop.and(operatorController.x()).and(outtake.negate()).onTrue(shotCommand(0.8));
+    teleop.and(operatorController.y()).and(outtake.negate()).onTrue(shotCommand(0.9));
+    teleop.and(operatorController.a()).and(outtake.negate()).onTrue(shotCommand(1.0));
+    teleop.and(operatorController.b()).and(outtake.negate()).onTrue(shotCommand(0.6));
+  }
+
+  private Command shotCommand(double power) {
+    return Commands.sequence(
+        intake.reverseCommand().withTimeout(0.1).deadlineFor(shooter.setVoltageCommand(0)),
+        Commands.waitSeconds(0.1).deadlineFor(intake.setVoltageCommand(0), shooter.setVoltageCommand(0)),
+        intake.intakeCommand().alongWith(shooter.setVoltageCommand(Constants.MAX_FIREPOWER * power))
+            .withTimeout(1.0))
+        .beforeStarting(() -> shooting = true)
+        .finallyDo(() -> shooting = false);
   }
 
   @Override
