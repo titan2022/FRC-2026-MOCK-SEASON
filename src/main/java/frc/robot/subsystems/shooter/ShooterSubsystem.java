@@ -1,13 +1,11 @@
-
 package frc.robot.subsystems.shooter;
+
+import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.subsystems.base.VoltageControlledBase;
 
@@ -33,10 +31,10 @@ public class ShooterSubsystem extends VoltageControlledBase {
   }
 
   // yes this is vague sorry
-  public Command fireCommand(CommandXboxController operatorController) {
+  public Command fireCommand(DoubleSupplier power) {
     return runEnd(
         // be careful with your lambda!
-        () -> setVoltage(Constants.MAX_FIREPOWER * operatorController.getRightTriggerAxis()),
+        () -> setVoltage(Constants.MAX_FIREPOWER * power.getAsDouble()),
         this::stop);
   }
 

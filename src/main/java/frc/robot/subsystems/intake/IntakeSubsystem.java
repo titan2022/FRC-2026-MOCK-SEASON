@@ -1,13 +1,11 @@
-
 package frc.robot.subsystems.intake;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
-import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.base.VoltageControlledBase;
 
 public class IntakeSubsystem extends VoltageControlledBase {
@@ -32,11 +30,12 @@ public class IntakeSubsystem extends VoltageControlledBase {
   public IntakeSubsystem() {
     initialize();
   }
-
-
-
   // Ani: Implement intake behavior.
-public Command intakeCommand() {
+  public Command intakeCommand() {
     return forwardCommand();
-}
+  }
+
+  public Command feedCommand() {
+    return setVoltageCommand(Constants.FEED_VOLTAGE);
+  }
 }

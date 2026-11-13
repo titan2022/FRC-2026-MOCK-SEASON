@@ -5,7 +5,6 @@
 package frc.robot;
 
 import dev.doglog.DogLog;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.ShootCommand;
 import frc.robot.drive.KitbotTankDrivetrain;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -21,17 +21,17 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 /** Reduced version of 2026 Robot.java. */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-  private boolean shooting;
   private double shooterPower = 1.0;
 
-  public final CommandXboxController driveController = new CommandXboxController(
-    0);
+  public final CommandXboxController driveController = new CommandXboxController(0);
   public final CommandXboxController operatorController = new CommandXboxController(1);
 
   // TODO pls double check these
   public final KitbotTankDrivetrain drivetrain = new KitbotTankDrivetrain();
   public final IntakeSubsystem intake = new IntakeSubsystem();
   public final ShooterSubsystem shooter = new ShooterSubsystem(); // no need to pass through
+
+  private final ShootCommand shootCommand = new ShootCommand(intake, shooter, () -> shooterPower);
 
   public SendableChooser<Command> autoChooser;
 
@@ -71,9 +71,6 @@ public class Robot extends TimedRobot {
 
   public void configureBindings() {
     // TODO: after configuration, use the same binding pattern as the team Robot.
-    // ball.setDefaultCommand(ball.stopCommand());
-    // operatorController.rightBumper().whileTrue(ball.captureCommand());
-    // operatorController.rightTrigger().whileTrue(ball.releaseCommand());
 
     drivetrain.setDefaultCommand(drivetrain.driveTank(
         // this may be dtm but i think it is "best"
@@ -92,10 +89,10 @@ public class Robot extends TimedRobot {
     Trigger teleop = new Trigger(this::isTeleopEnabled);
     Trigger outtake = teleop.and(operatorController.rightBumper());
     // when left bumper AND not outaking run intake
-    teleop.and(operatorController.leftBumper()).and(outtake.negate()).and(() -> !shooting)
-        .whileTrue(intake.intakeCommand());
-    teleop.and(operatorController.leftBumper()).and(outtake.negate()).and(() -> !shooting)
-        .whileTrue(shooter.setVoltageCommand(-12));
+    Trigger capture = teleop.and(operatorController.leftBumper()).and(outtake.negate())
+        .and(() -> !shootCommand.isScheduled());
+    capture.whileTrue(intake.intakeCommand());
+    capture.whileTrue(shooter.reverseCommand());
 
     // MECHANISM: OUTTAKING
     outtake.whileTrue(intake.reverseCommand());
@@ -105,21 +102,10 @@ public class Robot extends TimedRobot {
     teleop.and(operatorController.a()).onTrue(Commands.runOnce(() -> shooterPower = 1.0));
     teleop.and(operatorController.b()).onTrue(Commands.runOnce(() -> shooterPower = 0.6));
     operatorController.rightTrigger().onTrue(Commands.runOnce(() -> {
-      if (isTeleopEnabled() && !outtake.getAsBoolean() && !shooting) {
-        shotCommand(shooterPower).schedule();
+      if (isTeleopEnabled() && !outtake.getAsBoolean() && !shootCommand.isScheduled()) {
+        shootCommand.schedule();
       }
     }));
-  }
-
-  private Command shotCommand(double power) {
-    return Commands.sequence(
-        intake.reverseCommand().withTimeout(0.2).deadlineFor(shooter.setVoltageCommand(-12)),
-        Commands.waitSeconds(0.6).deadlineFor(
-            intake.setVoltageCommand(0), shooter.setVoltageCommand(Constants.MAX_FIREPOWER * power)),
-        intake.setVoltageCommand(6.0).alongWith(shooter.setVoltageCommand(Constants.MAX_FIREPOWER * power))
-            .withTimeout(1.0))
-        .beforeStarting(() -> shooting = true)
-        .finallyDo(() -> shooting = false);
   }
 
   @Override
