@@ -72,13 +72,20 @@ public class Robot extends TimedRobot {
   public void configureBindings() {
     // TODO: after configuration, use the same binding pattern as the team Robot.
 
-    drivetrain.setDefaultCommand(drivetrain.driveTank(
-        // this may be dtm but i think it is "best"
-        // after checking for tele, we take into account
-        // both the drive and op controller movements
-        () -> isTeleopEnabled() ? -driveController.getLeftY() : 0,
-        () -> isTeleopEnabled() ? -driveController.getRightY() : 0,
-        () -> isTeleopEnabled() ? operatorController.getLeftX() : 0));
+
+
+drivetrain.setDefaultCommand(drivetrain.driveArcade(
+
+    // Driver controls forward/backward
+    () -> isTeleopEnabled() ? -driveController.getLeftY() : 0,
+
+// Combine driver left stick, driver right stick, and operator steering
+() -> isTeleopEnabled()
+    ? -(driveController.getLeftX()
+      + driveController.getRightX()
+      + operatorController.getLeftX())
+    : 0
+));
 
     // maybe we make intake spin up by default ? kinda
     // would conflict with the intake mech though
