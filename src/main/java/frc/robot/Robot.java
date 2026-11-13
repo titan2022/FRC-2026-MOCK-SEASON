@@ -90,6 +90,9 @@ public class Robot extends TimedRobot {
     // when left bumper AND not outaking run intake
     teleop.and(operatorController.leftBumper()).and(outtake.negate())
         .whileTrue(intake.intakeCommand());
+    teleop.and(operatorController.leftBumper()).and(outtake.negate())
+        .and(operatorController.rightTrigger(0.01).negate())
+        .whileTrue(shooter.setVoltageCommand(-5));
 
     // MECHANISM: OUTTAKING
     outtake.whileTrue(intake.reverseCommand());

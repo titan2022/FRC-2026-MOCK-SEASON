@@ -20,7 +20,7 @@ public class ShooterSubsystem extends VoltageControlledBase {
     // on the robot
     motor = new WPI_TalonSRX(2);
     motorConfig = new TalonSRXConfiguration();
-    motorConfig.peakOutputReverse = 0.0;
+    motorConfig.peakOutputReverse = -1.0;
     DEFAULT_VOLTAGE = Constants.MAX_FIREPOWER;
     motor.setInverted(false);
     // dont want abrupt stop

@@ -28,7 +28,6 @@ public class IntakeSubsystem extends VoltageControlledBase {
 
     motor.setNeutralMode(NeutralMode.Brake);
   }
-  WPI_TalonSRX shooterMot = new WPI_TalonSRX(2);
 
   public IntakeSubsystem() {
     initialize();
@@ -38,12 +37,6 @@ public class IntakeSubsystem extends VoltageControlledBase {
 
   // Ani: Implement intake behavior.
 public Command intakeCommand() {
-    return runEnd(
-        () -> {
-            shooterMot.setVoltage(-5);
-            forward();
-        },
-        this::stop
-    );
+    return forwardCommand();
 }
 }
