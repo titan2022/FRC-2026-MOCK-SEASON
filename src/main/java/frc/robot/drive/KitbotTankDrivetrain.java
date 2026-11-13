@@ -41,6 +41,7 @@ public class KitbotTankDrivetrain extends SubsystemBase {
     drive = new DifferentialDrive(leftDrive::set, rightDrive::set);
     // this MAY need to be chanegd
     drive.setDeadband(0);
+    drive.setMaxOutput(Constants.DRIVE_MAX_OUTPUT);
   }
 
   // TODO (Lia): set up drive speed limiting and
@@ -54,7 +55,7 @@ public class KitbotTankDrivetrain extends SubsystemBase {
           double right = MathUtil.applyDeadband(rightSpeed.getAsDouble(), Constants.DRIVE_DEADBAND);
           // remember, aim is the operator controller's seperate amt
           double turn = MathUtil.applyDeadband(aim.getAsDouble(), Constants.AIM_DEADBAND)
-              * Constants.AIM_MAX_OUTPUT;
+              * Constants.AIM_MAX_OUTPUT / Constants.DRIVE_MAX_OUTPUT;
           drive.tankDrive(left + turn, right - turn, false);
         },
         this::brake);

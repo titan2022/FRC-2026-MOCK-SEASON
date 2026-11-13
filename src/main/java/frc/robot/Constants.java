@@ -16,6 +16,7 @@ public final class Constants {
   public static final double SHOT_FEED_SECONDS = 1.0;
 
   public static final double DRIVE_DEADBAND = 0.08;
+  public static final double DRIVE_MAX_OUTPUT = 0.60;
   public static final double AIM_DEADBAND = 0.15;
   public static final double AIM_MAX_OUTPUT = 0.40;
 }
