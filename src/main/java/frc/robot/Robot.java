@@ -108,14 +108,15 @@ public class Robot extends TimedRobot {
         .onTrue(Commands.defer(() -> shotCommand(shooterPower), java.util.Set.of(intake, shooter)));
   }
 
-private Command shotCommand(double power) {
+  private Command shotCommand(double power) {
     return Commands.sequence(
-        intake.setVoltageCommand(6.0).withTimeout(0.2),
-        intake.intakeCommand().alongWith(shooter.setVoltageCommand(15.0))
-            .withTimeout(1.5))
+        intake.reverseCommand().withTimeout(0.2).deadlineFor(shooter.setVoltageCommand(-12)),
+        Commands.waitSeconds(0.1).deadlineFor(intake.setVoltageCommand(0), shooter.setVoltageCommand(0)),
+        intake.setVoltageCommand(6.0).alongWith(shooter.setVoltageCommand(Constants.MAX_FIREPOWER * power))
+            .withTimeout(1.0))
         .beforeStarting(() -> shooting = true)
         .finallyDo(() -> shooting = false);
-}
+  }
 
   @Override
   public void robotPeriodic() {
