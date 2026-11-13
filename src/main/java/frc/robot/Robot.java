@@ -22,6 +22,7 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private boolean shooting;
+  private double shooterPower = 1.0;
 
   public final CommandXboxController driveController = new CommandXboxController(
     0);
@@ -63,7 +64,9 @@ public class Robot extends TimedRobot {
    * Operator right shoulder
    * Reverses those rollers
    * Operator X/Y/A/B
-   * Fires at 80%/90%/100%/60% power
+   * Selects 80%/90%/100%/60% power
+   * Operator right trigger
+   * Fires one timed shot at the selected power
    */
 
   public void configureBindings() {
@@ -92,20 +95,22 @@ public class Robot extends TimedRobot {
     teleop.and(operatorController.leftBumper()).and(outtake.negate()).and(() -> !shooting)
         .whileTrue(intake.intakeCommand());
     teleop.and(operatorController.leftBumper()).and(outtake.negate()).and(() -> !shooting)
-        .whileTrue(shooter.setVoltageCommand(-5));
+        .whileTrue(shooter.setVoltageCommand(-12));
 
     // MECHANISM: OUTTAKING
     outtake.whileTrue(intake.reverseCommand());
 
-    teleop.and(operatorController.x()).and(outtake.negate()).onTrue(shotCommand(0.8));
-    teleop.and(operatorController.y()).and(outtake.negate()).onTrue(shotCommand(0.9));
-    teleop.and(operatorController.a()).and(outtake.negate()).onTrue(shotCommand(1.0));
-    teleop.and(operatorController.b()).and(outtake.negate()).onTrue(shotCommand(0.6));
+    teleop.and(operatorController.x()).onTrue(Commands.runOnce(() -> shooterPower = 0.8));
+    teleop.and(operatorController.y()).onTrue(Commands.runOnce(() -> shooterPower = 0.9));
+    teleop.and(operatorController.a()).onTrue(Commands.runOnce(() -> shooterPower = 1.0));
+    teleop.and(operatorController.b()).onTrue(Commands.runOnce(() -> shooterPower = 0.6));
+    teleop.and(operatorController.rightTrigger()).and(outtake.negate())
+        .onTrue(Commands.defer(() -> shotCommand(shooterPower), java.util.Set.of(intake, shooter)));
   }
 
   private Command shotCommand(double power) {
     return Commands.sequence(
-        intake.reverseCommand().withTimeout(0.1).deadlineFor(shooter.setVoltageCommand(0)),
+        intake.reverseCommand().withTimeout(0.1).deadlineFor(shooter.setVoltageCommand(-12)),
         Commands.waitSeconds(0.1).deadlineFor(intake.setVoltageCommand(0), shooter.setVoltageCommand(0)),
         intake.intakeCommand().alongWith(shooter.setVoltageCommand(Constants.MAX_FIREPOWER * power))
             .withTimeout(1.0))
