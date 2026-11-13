@@ -104,8 +104,11 @@ public class Robot extends TimedRobot {
     teleop.and(operatorController.y()).onTrue(Commands.runOnce(() -> shooterPower = 0.9));
     teleop.and(operatorController.a()).onTrue(Commands.runOnce(() -> shooterPower = 1.0));
     teleop.and(operatorController.b()).onTrue(Commands.runOnce(() -> shooterPower = 0.6));
-    teleop.and(operatorController.rightTrigger()).and(outtake.negate())
-        .onTrue(Commands.defer(() -> shotCommand(shooterPower), java.util.Set.of(intake, shooter)));
+    operatorController.rightTrigger().onTrue(Commands.runOnce(() -> {
+      if (isTeleopEnabled() && !outtake.getAsBoolean() && !shooting) {
+        shotCommand(shooterPower).schedule();
+      }
+    }));
   }
 
   private Command shotCommand(double power) {
