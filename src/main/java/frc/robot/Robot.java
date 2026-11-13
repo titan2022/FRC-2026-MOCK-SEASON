@@ -22,7 +22,8 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  public final CommandXboxController driveController = new CommandXboxController(0);
+  public final CommandXboxController driveController = new CommandXboxController(
+    0);
   public final CommandXboxController operatorController = new CommandXboxController(1);
 
   // TODO pls double check these

@@ -18,7 +18,7 @@ public class ShooterSubsystem extends VoltageControlledBase {
     // Back motor drives the upper shooter
     // we need to double check this
     // on the robot
-    motor = new WPI_TalonSRX(3);
+    motor = new WPI_TalonSRX(2);
     motorConfig = new TalonSRXConfiguration();
     motorConfig.peakOutputReverse = 0.0;
     DEFAULT_VOLTAGE = Constants.MAX_FIREPOWER;

@@ -18,25 +18,32 @@ public class IntakeSubsystem extends VoltageControlledBase {
     // linked by belt
     // direction may need to be checked on the bot
 
-    motor = new WPI_TalonSRX(2);
+    motor = new WPI_TalonSRX(3);
     motorConfig = new TalonSRXConfiguration();
 
     // may need to change
-    DEFAULT_VOLTAGE = 3.0;
+    DEFAULT_VOLTAGE = 12.0;
     // direction
     motor.setInverted(false);
 
     motor.setNeutralMode(NeutralMode.Brake);
   }
+  WPI_TalonSRX shooterMot = new WPI_TalonSRX(2);
 
   public IntakeSubsystem() {
     initialize();
   }
 
-  // Ani: Implement intake behavior.
-  public Command intakeCommand() {
-    return forwardCommand();
-    // ^^ remember, use VoltageControlledBase methods
-  }
 
+
+  // Ani: Implement intake behavior.
+public Command intakeCommand() {
+    return runEnd(
+        () -> {
+            shooterMot.setVoltage(-5);
+            forward();
+        },
+        this::stop
+    );
+}
 }
