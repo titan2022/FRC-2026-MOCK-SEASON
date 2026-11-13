@@ -111,7 +111,8 @@ public class Robot extends TimedRobot {
   private Command shotCommand(double power) {
     return Commands.sequence(
         intake.reverseCommand().withTimeout(0.2).deadlineFor(shooter.setVoltageCommand(-12)),
-        Commands.waitSeconds(0.1).deadlineFor(intake.setVoltageCommand(0), shooter.setVoltageCommand(0)),
+        Commands.waitSeconds(0.6).deadlineFor(
+            intake.setVoltageCommand(0), shooter.setVoltageCommand(Constants.MAX_FIREPOWER * power)),
         intake.setVoltageCommand(6.0).alongWith(shooter.setVoltageCommand(Constants.MAX_FIREPOWER * power))
             .withTimeout(1.0))
         .beforeStarting(() -> shooting = true)
