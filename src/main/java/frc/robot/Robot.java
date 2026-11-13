@@ -110,7 +110,7 @@ public class Robot extends TimedRobot {
 
   private Command shotCommand(double power) {
     return Commands.sequence(
-        intake.reverseCommand().withTimeout(0.1).deadlineFor(shooter.setVoltageCommand(-12)),
+        intake.reverseCommand().withTimeout(0.2).deadlineFor(shooter.setVoltageCommand(-12)),
         Commands.waitSeconds(0.1).deadlineFor(intake.setVoltageCommand(0), shooter.setVoltageCommand(0)),
         intake.intakeCommand().alongWith(shooter.setVoltageCommand(Constants.MAX_FIREPOWER * power))
             .withTimeout(1.0))
