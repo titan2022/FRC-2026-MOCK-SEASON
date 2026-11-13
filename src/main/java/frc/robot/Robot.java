@@ -57,7 +57,7 @@ public class Robot extends TimedRobot {
    * 
    * Operator left stick X
    * Adds extra turning past a 15% deadband,
-   * Capped at 15% output
+   * Capped at 40% output
    * driver remains active
    * Operator left shoulder
    * Runs the intake/feed rollers

@@ -12,5 +12,5 @@ public final class Constants {
   public static final double MAX_FIREPOWER = 12.0; // volts need to tune on the robot
   public static final double DRIVE_DEADBAND = 0.08;
   public static final double AIM_DEADBAND = 0.15;
-  public static final double AIM_MAX_OUTPUT = 0.15;
+  public static final double AIM_MAX_OUTPUT = 0.40;
 }
