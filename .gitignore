@@ -3,6 +3,7 @@ build/
 bin/
 *.wpilog
 networktables.json
+networktables.json.bck
 simgui*.json
 .vscode/*.log
 .DS_Store

@@ -1,14 +1,13 @@
 package frc.robot.subsystems.base;
 
-import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
 
 import dev.doglog.DogLog;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -130,8 +129,9 @@ public class VoltageControlledBase extends SubsystemBase {
    * @param voltage The voltage to apply
    */
   public void setVoltage(double voltage) {
-    voltageSetpoint = voltage;
-    motor.setVoltage(voltage);
+    // Keep a malformed dashboard value from reaching a motor controller.
+    voltageSetpoint = Double.isFinite(voltage) ? MathUtil.clamp(voltage, -12.0, 12.0) : 0.0;
+    motor.setVoltage(voltageSetpoint);
   }
 
   /**
@@ -190,6 +190,6 @@ public class VoltageControlledBase extends SubsystemBase {
    * @return A command that stops the mechanism
    */
   public Command stopCommand() {
-    return runOnce(this::stop);
+    return run(this::stop);
   }
 }
