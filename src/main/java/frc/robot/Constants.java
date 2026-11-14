@@ -15,6 +15,11 @@ public final class Constants {
   public static final double SHOOTER_SPINUP_SECONDS = 0.6;
   public static final double SHOT_FEED_SECONDS = 1.0;
 
+  public static final double AUTO_DRIVE_POWER = 1.0;
+  public static final double AUTO_DRIVE_SECONDS = 2.0;
+  public static final double AUTO_SETTLE_SECONDS = 0.25;
+  public static final double AUTO_SHOOTER_POWER = 0.8;
+
   public static final double DRIVE_DEADBAND = 0.08;
   public static final double DRIVE_MAX_OUTPUT = 0.60;
   public static final double AIM_DEADBAND = 0.13;

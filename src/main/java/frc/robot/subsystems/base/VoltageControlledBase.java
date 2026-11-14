@@ -1,19 +1,21 @@
 package frc.robot.subsystems.base;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 import dev.doglog.DogLog;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -85,6 +87,9 @@ public class VoltageControlledBase extends SubsystemBase {
     DogLog.log(SUBSYSTEM_NAME + "/Stator Current", getCurrent());
     DogLog.log(SUBSYSTEM_NAME + "/Temperature", getTemperature());
     // DogLog.log(SUBSYSTEM_NAME + "/Voltage Setpoint", getVoltageSetpoint());
+    SmartDashboard.putNumber(SUBSYSTEM_NAME + "/Requested voltage", getVoltageSetpoint());
+    SmartDashboard.putNumber(SUBSYSTEM_NAME + "/Voltage", getVoltage());
+    SmartDashboard.putNumber(SUBSYSTEM_NAME + "/Current", getCurrent());
   }
 
   /**
@@ -129,9 +134,8 @@ public class VoltageControlledBase extends SubsystemBase {
    * @param voltage The voltage to apply
    */
   public void setVoltage(double voltage) {
-    // Keep a malformed dashboard value from reaching a motor controller.
-    voltageSetpoint = Double.isFinite(voltage) ? MathUtil.clamp(voltage, -12.0, 12.0) : 0.0;
-    motor.setVoltage(voltageSetpoint);
+    voltageSetpoint = voltage;
+    motor.setVoltage(voltage);
   }
 
   /**
@@ -190,6 +194,6 @@ public class VoltageControlledBase extends SubsystemBase {
    * @return A command that stops the mechanism
    */
   public Command stopCommand() {
-    return run(this::stop);
+    return runOnce(this::stop);
   }
 }
